@@ -33,12 +33,20 @@ export default function Login() {
   const [listRole, setListRole] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [captchaValue, setCaptchaValue] = useState(null);
+  const [captchaImage, setCaptchaImage] = useState(""); // Captcha URL
   // const [captchaQuestion, setCaptchaQuestion] = useState("");
   // const [captchaAnswer, setCaptchaAnswer] = useState(null);
   // const [userCaptchaInput, setUserCaptchaInput] = useState("");
+  const loadCaptcha = () => {
+    setCaptchaImage(API_LINK+`Utilities/GetCaptcha?rand=${Math.random()}`);
+  };
+
+  useEffect(() => {
+    loadCaptcha(); // Muat captcha saat komponen di-mount
+  }, []);
 
   const [captchaNumber, setCaptchaNumber] = useState("");
-const [userCaptchaInput, setUserCaptchaInput] = useState("");
+  const [userCaptchaInput, setUserCaptchaInput] = useState("");
 
   const generateCaptcha = () => {
     // const num1 = Math.floor(Math.random() * 10) + 1; // Angka 1-10
@@ -101,12 +109,17 @@ const [userCaptchaInput, setUserCaptchaInput] = useState("");
     //   return;
     // }
 
-    if (userCaptchaInput.trim() !== captchaNumber) {
-      setIsError({ error: true, message: "Jawaban CAPTCHA salah!" });
-      generateCaptcha(); // Generate CAPTCHA baru setelah kesalahan
-      setUserCaptchaInput(""); // Reset input CAPTCHA
+    // if (userCaptchaInput.trim() !== captchaNumber) {
+    //   setIsError({ error: true, message: "Jawaban CAPTCHA salah!" });
+    //   generateCaptcha(); // Generate CAPTCHA baru setelah kesalahan
+    //   setUserCaptchaInput(""); // Reset input CAPTCHA
+    //   return;
+    // }
+    if (userCaptchaInput.trim() === "") {
+      setIsError({ error: true, message: "Harap masukkan CAPTCHA!" });
       return;
     }
+
 
     const validationErrors = await validateAllInputs(
       formDataRef.current,
@@ -119,13 +132,27 @@ const [userCaptchaInput, setUserCaptchaInput] = useState("");
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
 
-      try {
-        const data = await UseFetch(API_LINK + "Utilities/Login", {
-          ...formDataRef.current,
-          captcha: captchaValue, // Kirim token CAPTCHA ke server
-        });
+  const loginData = {
+      username: formDataRef.current.username,
+      password: formDataRef.current.password,
+      captcha: userCaptchaInput // Input CAPTCHA dari pengguna
+  };
+
+  try {
+      const response = await fetch(`${API_LINK}Utilities/Login`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify(loginData),
+          credentials: "include" // Pastikan session cookie dikirim
+      });
+      const data = await response.json();
+        console.log("hasil login", data);
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal melakukan autentikasi.");
+        } else if(data.error === "Captcha tidak valid."){
+          throw new Error("Captcha yang dimasukan tidak sesuai.");
         } else if (data[0].Status === "LOGIN FAILED") {
           throw new Error("Nama akun atau kata sandi salah.");
         } else {
@@ -140,11 +167,13 @@ const [userCaptchaInput, setUserCaptchaInput] = useState("");
           error: true,
           message: error.message,
         }));
+        loadCaptcha();
       } finally {
         setIsLoading(false);
       }
     } else {
       window.scrollTo(0, 0);
+      loadCaptcha();
     }
   };
 
@@ -302,7 +331,7 @@ const [userCaptchaInput, setUserCaptchaInput] = useState("");
                     )}
                   </div> */}
 
-
+{/* 
                   <div className="captcha-container" style={{ marginTop: "20px", display:"flex", justifyContent:"space-between" }}>
                       <div
                         className="captcha-number"
@@ -343,7 +372,7 @@ const [userCaptchaInput, setUserCaptchaInput] = useState("");
                         // <p className="error-message" style={{ color: "red", marginTop: "5px" }}>
                         //   Jawaban CAPTCHA salah! Silakan coba lagi.
                         // </p>
-                        <div className=""></div>
+                      <div className=""></div>
                       )}
                       </div>
                       <div className="">
@@ -364,7 +393,61 @@ const [userCaptchaInput, setUserCaptchaInput] = useState("");
                       </button>
                       </div>
                       </div>
-                    </div>
+                    </div> */}
+
+<div className="mt-4">
+    <p style={{textAlign:"left"}}>Captcha <span style={{color:"red"}}>*</span></p>
+    </div>
+<div style={{ display: "flex", alignItems: "center",  marginTop:"5px" }}>
+  
+    <img
+                    src={captchaImage}
+                    alt="Captcha"
+                    style={{ height: "50px", marginRight: "10px" }}
+                  />
+
+                 
+                  <div className="d-flex">
+                    <div className="ml-3">
+                   <input
+                  type="text"
+                  placeholder="Masukkan Captcha"
+                  value={userCaptchaInput}
+                  onChange={(e) => setUserCaptchaInput(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: "5px 0px 0px 5px",
+                    border: "1px solid #ccc",
+                    height:"44px"
+                  }}
+                />
+                </div>
+                <div className="">
+                <button
+                    type="button"
+                    onClick={loadCaptcha}
+                    style={{
+                      padding: "10px",
+                      width:"50px",
+                      border: "none",
+                      backgroundColor: "#0A5EA8",
+                      borderRadius: "0px 5px 5px 0px",
+                      cursor: "pointer",
+                      color:"white"
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faSyncAlt} />
+                  </button>
+                  </div>
+                </div>
+                  
+                </div>
+
+               
+
+                {/* {isError.error && <p style={{ color: "red" }}>{isError.message}</p>} */}
 
                   <button
                     className="login-button"
