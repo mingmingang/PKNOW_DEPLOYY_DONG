@@ -298,7 +298,7 @@ function CardPustaka({
             book.PemilikKK !== activeUser &&
             uploader !== book.Uploader
         ).length === 0 ? (
-          <div className="col-md-12">
+          <div className="col-md-12 ml-3">
             <Alert type="warning" message="Tidak ada data.." />
           </div>
         ) : (

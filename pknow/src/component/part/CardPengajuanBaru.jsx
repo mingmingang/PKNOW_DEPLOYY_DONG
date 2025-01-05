@@ -99,7 +99,7 @@ function CardPengajuanBaru({ data, onChangePage, isShow }) {
   } else {
     status = (
       <p>
-        Status: <span className="text-secondary fw-bold">-</span>
+        Status: <span className="text-secondary fw-bold">Aktif</span>
       </p>
     );
     aksi = (

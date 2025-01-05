@@ -75,7 +75,7 @@ export default function MasterMateriReviewJawaban({
         })
       }
       setIsLoading(false);
-      //onChangePage("index");
+      onChangePage("index");
     } catch (error) {
       setIsLoading(false);
       console.error("Error saving review:", error);
@@ -136,11 +136,13 @@ export default function MasterMateriReviewJawaban({
                 if (
                   !groupAnswer[trqId].answer.some(
                     (item) =>
-                      item.ans_jawaban_pengguna === answer.ans_jawaban_pengguna
+                      item.ans_jawaban_pengguna === answer.ans_jawaban_pengguna,
                   )
                 ) {
                   groupAnswer[trqId].answer.push({
+                    que_id: answer.que_id,
                     ans_jawaban_pengguna: answer.ans_jawaban_pengguna,
+                    que_tipe: answer.que_tipe
                   });
                 }
               });
@@ -183,16 +185,19 @@ export default function MasterMateriReviewJawaban({
           const response = await axios.post(
             API_LINK + "Quiz/GetDataTransaksiReview",
             {
-              quizId: AppContext_test.materiId,
+              materiId: AppContext_test.materiId,
             }
           );
-          
+         
           if (response.data.length !== 0) {
             setIsLoading(false);
             const filteredTransaksi = response.data.filter(
               (transaksi) =>
-                transaksi.trq_status === "Not Reviewed"
+                transaksi.trq_status === "Not Reviewed" &&
+                (transaksi.que_tipe === "Essay" || transaksi.que_tipe === "Praktikum")
             );
+
+            console.log("hasil tr", filteredTransaksi)
             
             return filteredTransaksi;
           }
@@ -482,6 +487,21 @@ export default function MasterMateriReviewJawaban({
     5: "Benar Sekali (5/5)",
   };
 
+  const matchedAnswer = (question, currentRespondent) => {
+    if (!currentData || !currentRespondent) return null;
+
+    console.log("Current Respondent:", currentRespondent);
+  console.log("Question:", question);
+
+  // Cari jawaban yang cocok di dalam array `answer` milik `currentRespondent`
+  const answer = currentRespondent.answer.find(
+    (ans) =>
+      ans.que_id === question.Key && // ID soal cocok
+      ans.que_tipe === question.TipeSoal // Tipe soal cocok
+  );
+    return answer ? answer.ans_jawaban_pengguna : null;
+  };
+  
   return (
     <>
       <div className="">
@@ -492,6 +512,30 @@ export default function MasterMateriReviewJawaban({
           showInput={false}
         />
       </div>
+
+      <div className="d-flex justify-content-between ml-4 mr-4">
+        <div className="">
+        <h3>Review Jawaban Quiz</h3>
+        </div>
+        <div className="">
+        <select
+            className="form-select me-4 mt-4"
+            value={currentRespondentIndex} // Gunakan currentRespondentIndex sebagai value
+            onChange={(e) => {
+              const selectedIndex = parseInt(e.target.value, 10);
+              setCurrentRespondentIndex(selectedIndex);
+            }}
+            style={{ flex: "1" }}
+          >
+            {Object.values(currentData).map((respondent, index) => (
+              <option key={respondent.trq_id} value={index}>
+                {respondent.nama}
+              </option>
+            ))}
+          </select>
+          </div>
+      </div>
+      
       <div className="container mb-4" style={{ marginTop: "50px" }}>
         <Card className="mb-4">
           <Card.Header
@@ -507,28 +551,21 @@ export default function MasterMateriReviewJawaban({
               </h3>
             </div>
             <div className="header-right" style={{ marginLeft: "auto" }}>
-              <select
-                className="form-select me-4 mt-4 "
-                value={currentData.trq_created_by}
-                onChange={(e) =>
-                  setCurrentRespondentIndex(
-                    currentData.findIndex(
-                      (respondent) =>
-                        respondent.trq_created_by === e.target.value
-                    )
-                  )
-                }
-                style={{ flex: "1" }}
-              >
-                {Object.values(currentData).map((respondent, index) => (
-                  <option
-                    key={respondent.trq_id}
-                    value={respondent.trq_created_by}
-                  >
-                    {respondent.nama}
-                  </option>
-                ))}
-              </select>
+            <select
+            className="form-select me-4 mt-4"
+            value={currentRespondentIndex} // Gunakan currentRespondentIndex sebagai value
+            onChange={(e) => {
+              const selectedIndex = parseInt(e.target.value, 10);
+              setCurrentRespondentIndex(selectedIndex);
+            }}
+            style={{ flex: "1" }}
+          >
+            {Object.values(currentData).map((respondent, index) => (
+              <option key={respondent.trq_id} value={index}>
+                {respondent.nama}
+              </option>
+            ))}
+          </select>
               <span className="text-light">
                 <span className="ms-3">
                   <i className="bi bi-caret-right-fill"></i>
@@ -558,12 +595,20 @@ export default function MasterMateriReviewJawaban({
           </Card.Header>
           <Card.Body>
             {currentQuestions.map((question, questionIndex) => {
+              // const currentRespondent = currentData[currentRespondentIndex];
+              // console.log("data", currentRespondent);
+              // const answer = matchedAnswer(question);
+              // const matchedAnswer =
+              //   currentRespondent?.answer?.[questionIndex]
+              //     ?.ans_jawaban_pengguna;
+              // console.log("answerrr", currentRespondent);
+
               const currentRespondent = currentData[currentRespondentIndex];
-              console.log("data", currentRespondent);
-              const matchedAnswer =
-                currentRespondent?.answer?.[questionIndex]
-                  ?.ans_jawaban_pengguna;
-              console.log("answerrr", currentRespondent);
+              console.log("data responden saat ini:", currentRespondent);
+            
+              const answer = matchedAnswer(question, currentRespondent);
+              console.log("Jawaban yang cocok:", answer);
+
               return (
                 <Card key={question.Key} className="mb-4">
                   <Card.Header className="">
@@ -631,7 +676,7 @@ export default function MasterMateriReviewJawaban({
                           <Form.Control
                             as="textarea"
                             rows={3}
-                            value={matchedAnswer || "Belum ada jawaban"}
+                            value={answer || "Belum ada jawaban"}
                             onChange={(e) =>
                               handleAnswerChange(questionIndex, e.target.value)
                             }
@@ -643,19 +688,18 @@ export default function MasterMateriReviewJawaban({
                           controlId={`file-${question.Key}`}
                           className=""
                         >
-                          {console.log("answer file", matchedAnswer)}
                           <Button
                             className="btn btn-primary"
                             onClick={() => {
-                              if (matchedAnswer) {
-                                downloadFile(matchedAnswer); // Panggil fungsi downloadFile dengan matchedAnswer
+                              if (answer) {
+                                downloadFile(answer); // Panggil fungsi downloadFile dengan matchedAnswer
                               } else {
                                 alert("Tidak ada file untuk diunduh");
                               }
                             }}
                           >
                             <i className="fi fi-rr-file-download me-2"></i>
-                            {matchedAnswer ? matchedAnswer : "Tidak ada file"}
+                            {answer ? answer : "Tidak ada file"}
                           </Button>
                         </Form.Group>
                       )}

@@ -12,7 +12,6 @@ import FileUpload from "../../../part/FileUpload";
 import Loading from "../../../part/Loading";
 import Alert from "../../../part/Alert";
 import KMS_Sidebar from "../../../part/KMS_SideBar";
-// import Sidebar from '../../../backbone/SideBar';
 import styled from "styled-components";
 import KMS_Uploader from "../../../part/KMS_Uploader";
 import axios from "axios";
@@ -26,7 +25,6 @@ const ButtonContainer = styled.div`
     bottom: 35px;
   display: flex;
   justify-content: space-between;
-
 `;
 
 export default function PengerjaanTest({
@@ -104,10 +102,11 @@ export default function PengerjaanTest({
   }, []);
 
   const getSubmittedAnswer = (itemId) => {
+    console.log("iteemmm", answerUser)
     for (let i = 0; i < answerUser.length; i++) {
-      if (answerUser[i].idSoal == " " + itemId) {
-        console.log(answerUser[i].namaFile);
-        return answerUser[i] ? answerUser[i].namaFile : "";
+      if (answerUser[i].que_id === itemId) {
+        console.log("jawabann", answerUser[i].ans_jawaban_pengguna);
+        return answerUser[i] ? answerUser[i].ans_jawaban_pengguna : "";
       }
     }
   };
@@ -149,7 +148,8 @@ export default function PengerjaanTest({
           que_soal: item.que_soal,
           ans_jawaban_pengguna: item.ans_jawaban_pengguna,
           ans_nilai: item.ans_nilai,
-          ans_urutan: item.ans_urutan
+          ans_urutan: item.ans_urutan,
+          ans_tipe : item.que_tipe
         }));
 
         // const jawabanPenggunaStr = answerResponse.data[0].JawabanPengguna;
@@ -245,6 +245,8 @@ export default function PengerjaanTest({
                 ForeignKey,
                 Key,
                 JawabanPengguna,
+                TipePilihan,
+                Gambar
               } = item;
               if (!questionMap.has(Soal)) {
                 questionMap.set(Soal, true);
@@ -256,6 +258,9 @@ export default function PengerjaanTest({
                     answerStatus: "none",
                     point: NilaiJawaban,
                     id: Key,
+                    jawabanPengguna_soal: penggunaJawaban.find(
+                      (jawaban) => jawaban.que_soal === Soal && jawaban.que_id === Key),
+                    gambar: Gambar,
                   };
                 } else if (TipeSoal === "Praktikum") {
                   return {
@@ -265,6 +270,9 @@ export default function PengerjaanTest({
                     answerStatus: "none",
                     point: NilaiJawaban,
                     id: Key,
+                    jawabanPengguna_soal: penggunaJawaban.find(
+                      (jawaban) => jawaban.que_soal === Soal && jawaban.que_id === Key),
+                      gambar : Gambar,
                   };
                 } else {
                   const options = questionResponse.data
@@ -275,6 +283,7 @@ export default function PengerjaanTest({
                       nomorSoal: choice.Key,
                       nilai: choice.NilaiJawabanOpsi,
                       id: Key,
+                      opsi: TipePilihan
                     }));
                     console.log("optionnnnn", options);
                   return {
@@ -288,10 +297,12 @@ export default function PengerjaanTest({
                     ),
                     urutan: UrutanJawaban,
                     nilaiJawaban: NilaiJawabanOpsi,
-                    jawabanPengguna_value: 
-                    penggunaJawaban.find((jawaban) => jawaban.que_soal === Soal && jawaban.que_id === Key)?.value || "",
-                    jawabanPengguna_soal: penggunaJawaban.find(
-                      (jawaban) => jawaban.que_soal === Soal && jawaban.que_id === Key),
+                    jawabanPengguna_value: penggunaJawaban
+                      .filter((jawaban) => jawaban.que_soal === Soal && jawaban.que_id === Key)
+                      .map((jawaban) => jawaban.value), // Mengambil nilai dari semua jawaban pengguna
+                    jawabanPengguna_soal: penggunaJawaban.filter(
+                      (jawaban) => jawaban.que_soal === Soal && jawaban.que_id === Key
+                    ),
                     id: Key,
                   };
                 }
@@ -342,15 +353,11 @@ export default function PengerjaanTest({
 
   const downloadFile = async (namaFile) => {
     try {
-      namaFile = namaFile.trim();
-      // namaFile = " " + namaFile;
+      console.log("Nama file:", namaFile);
       const response = await axios.get(
-        `${API_LINK}Utilities/Upload/DownloadFile`,
+        `${API_LINK}Upload/GetFile/${encodeURIComponent(namaFile)}`,
         {
-          params: {
-            namaFile,
-          },
-          responseType: "arraybuffer",
+          responseType: "arraybuffer", // Untuk menangani file biner
         }
       );
 
@@ -365,9 +372,10 @@ export default function PengerjaanTest({
       a.click();
       a.remove();
     } catch (error) {
-      console.error("There was a problem with the fetch operation:", error);
+      console.error("Error downloading file:", error);
     }
   };
+
 
   const processOptions = (nomorSoal, jawabanPengguna_soal) => {
     let i = 0;
@@ -382,9 +390,9 @@ export default function PengerjaanTest({
   };
 
   const removeHtmlTags = (str) => {
-    return str.replace(/<\/?[^>]+(>|$)/g, ''); // Menghapus semua tag HTML
-  };
-
+    const decoded = he.decode(str); // Decode HTML entities seperti &lt; menjadi <
+    return decoded.replace(/<\/?[^>]+(>|$)/g, ''); // Hapus semua tag HTML
+};
   AppContext_test.durasiTest = 10000;
   
   return (
@@ -395,13 +403,12 @@ export default function PengerjaanTest({
             placeholder="Cari Kelompok Keahlian"
             showInput={false}
           />
-      <div className="d-flex" style={{marginTop:"20px"}}>
+      <div className="d-flex" style={{marginTop:"20px", height:"60vh"}}>
         <div
           className="flex-fill p-3 d-flex flex-column"
           style={{ marginLeft: "4vw" }}
         >
           <div className="mb-3 d-flex flex-wrap" style={{ overflowX: "auto" }}>
-            {console.log("dsad", currentData)}
             {currentData.map((item, index) => {
               console.log("dkdsd", item.jawabanPengguna_soal.ans_nilai )
               // const matchedAnswer = formattedAnswers.find(answer => answer.idSoal === " " + item.Key);
@@ -434,22 +441,85 @@ export default function PengerjaanTest({
                         textAlign: "justify",
                       }}
                     >
-                      <div className="">  <span>{removeHtmlTags(he.decode(item.question))}</span>
-                      <span
+                      <div className="">   
+                        
+                        <div className="">
+                          {removeHtmlTags(he.decode(item.question))}   <span
                         style={{
-                          fontSize: "14px",
+                          fontSize: "16px",
                           color: "#6c757d", 
                           marginLeft: "8px", 
                         }}
-                      >
-                        ({item.jawabanPengguna_soal.ans_nilai} Points)
+                      >  
+                      {console.log("ngok",item.jawabanPengguna_soal)}   
+                                
+                      {item.que_tipe === "Pilgan"
+                      ? `${item.jawabanPengguna_soal
+                          .filter((jawaban) => jawaban.que_id === item.que_id) // Hanya ambil jawaban dengan que_id yang sama
+                          .reduce((total, jawaban) => total + (jawaban.ans_nilai || 0), 0)} Points`
+                      : `${item.jawabanPengguna_soal[0]?.ans_nilai || ''}`} 
+
+                      
+                       {item.que_tipe === "Essay"
+                      ? `${item.jawabanPengguna_soal?.ans_nilai || 0} Points`
+                      : `${item.jawabanPengguna_soal?.ans_nilai || ''} Points`} 
                       </span>
 
 
+                      {/* {item.que_tipe === "Pilgan"
+                        ? (() => {
+                            const totalPoints = item.jawabanPengguna_soal
+                              .filter((jawaban) => jawaban.que_id === item.que_id)
+                              .reduce((total, jawaban) => total + (jawaban.ans_nilai || 0), 0);
+                            return totalPoints === 0 ? (
+                              <span
+                                style={{
+                                  fontSize: "16px",
+                                  color: "red",
+                                  marginLeft: "8px",
+                                }}
+                              >
+                                Salah
+                              </span>
+                            ) : null;
+                          })()
+                        : (() => {
+                            const points = item.jawabanPengguna_soal?.ans_nilai || '';
+                            return points === 0 ? (
+                              <span
+                                style={{
+                                  fontSize: "16px",
+                                  color: "red",
+                                  marginLeft: "8px",
+                                }}
+                              >
+                                Salah
+                              </span>
+                            ) : null;
+                          })()} */}
+                        </div>
+                    
                       </div>
                     </h4>
                   </div>
-                  
+                  {(item.type === "Essay" || item.type === "Praktikum") &&
+                      item.gambar && (
+                        <div>
+                          <img
+                            id="image"
+                            src={API_LINK + `Upload/GetFile/${item.gambar}`}
+                            alt="gambar"
+                            className="img-fluid"
+                            style={{
+                              maxWidth: "500px",
+                              maxHeight: "500px",
+                              overflow: "hidden",
+                              borderRadius: "20px",
+                            }}
+                          />
+                        </div>
+                      )}
+
                   {item.type === "Praktikum" ? (
                     <button
                       className="btn btn-primary"
@@ -460,6 +530,7 @@ export default function PengerjaanTest({
                             : "Tidak ada file"
                         )
                       }
+                      style={{marginTop:"25px"}}
                     >
                       <i className="fi fi-rr-file-download me-2"></i>
                       {getSubmittedAnswer(item.id)
@@ -479,7 +550,9 @@ export default function PengerjaanTest({
                     />
                   ) : (
                     <div className="d-flex flex-column">
+                      {console.log("data item", item)}
                     {item.options.map((option, optionIndex) => {
+                      if(option.opsi === "Tunggal"){
                     // Pastikan item.jawabanPengguna_soal adalah array sebelum di-loop
                     // const jawabanPengguna = Array.isArray(item.jawabanPengguna_soal)
                     //   ? item.jawabanPengguna_soal
@@ -527,6 +600,45 @@ export default function PengerjaanTest({
                         <span className="ms-2">{option.value}</span>
                       </div>
                     );
+                  } else {
+                    const isSelected = item.jawabanPengguna_soal.some(
+                      (jawaban) => jawaban.ans_urutan === option.urutan
+                    );
+                    const isCorrect = option.nilai !== 0;
+                    
+                    let borderColor1 = "lightgray";
+                    let backgroundColor1 = "white";
+                    
+                    if (isSelected) {
+                      borderColor1 = isCorrect ? "#28a745" : "#dc3545"; // Hijau untuk benar, merah untuk salah
+                      backgroundColor1 = isCorrect ? "#e9f7eb" : "#f8d7da"; // Warna background dinamis
+                    }
+                    
+                    return (
+                      <div
+                        key={optionIndex}
+                        className="mt-4 mb-2"
+                        style={{ display: "flex", alignItems: "center" }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                           // Disable untuk memastikan tidak bisa diubah oleh user
+                          style={{
+                            marginLeft: "6px",
+                            marginRight: "10px",
+                            transform: "scale(1.5)",
+                            borderColor: borderColor1,
+                            backgroundColor: backgroundColor1, // Warna background checkbox dinamis
+                            width: "20px", // Ukuran checkbox
+                            height: "20px", // Ukuran checkbox
+                            accentColor: isCorrect ? "#28a745" : "#dc3545", // Warna check saat dipilih
+                          }}
+                        />
+                        <span className="ms-2">{option.value}</span>
+                      </div>
+                    );
+                  }
                   })}
 
                     </div>

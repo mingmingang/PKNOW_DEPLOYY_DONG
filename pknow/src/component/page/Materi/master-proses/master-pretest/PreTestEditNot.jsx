@@ -110,6 +110,8 @@ export default function MasterPreTestEditNot({ onChangePage, withID }) {
   const [isBackAction, setIsBackAction] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const Materi = AppContext_master.MateriForm;
+
+  console.log("data materi", AppContext_master.MateriForm)
   const handleGoBack = () => {
     setIsBackAction(true);
     setShowConfirmation(true);
@@ -413,7 +415,7 @@ export default function MasterPreTestEditNot({ onChangePage, withID }) {
         setResetStepper((prev) => !prev + 1);
         Swal.fire({
             title: "Gagal!",
-            text: "Total skor harus berjumlah 100",
+            text: `Total skor harus berjumlah 100. Saat ini skor berjumlah: ${totalQuestionPoint + totalOptionPoint}`,
             icon: "error",
             confirmButtonText: "OK",
         });
@@ -472,18 +474,27 @@ export default function MasterPreTestEditNot({ onChangePage, withID }) {
 
                 const uploadPromises = [];
                 if (question.type === "Essay" || question.type === "Praktikum") {
-                  if (fileGambarRef.current.files.length > 0) {
-                    console.log("dsafadf");
-                    uploadPromises.push(
-                      UploadFile(fileGambarRef.current).then(
-                        (data) => (formQuestion.gambar = data.Hasil)
-                      )
-                    );
+                  if (question.selectedFile) {
+                    try {
+                      const uploadResult = await uploadFile(question.selectedFile);
+                      formQuestion.gambar = uploadResult.Hasil;
+        
+                      console.log("Gam", formQuestion.gambar);
+                    } catch (uploadError) {
+                      console.error("Gagal mengunggah gambar:", uploadError);
+                      Swal.fire({
+                        title: "Gagal!",
+                        text: `Gagal mengunggah gambar untuk pertanyaan: ${question.text}`,
+                        icon: "error",
+                        confirmButtonText: "OK",
+                      });
+                      return;
+                    }
                   } else {
                     formQuestion.gambar = "";
                   }
                 } else if (question.type === "Pilgan") {
-                  formQuestion.gambar = "";
+                  formQuestion.gambar= "";
                 }
 
                 try {
@@ -582,7 +593,7 @@ export default function MasterPreTestEditNot({ onChangePage, withID }) {
                 setErrors({});
                 setTimer("");
                 setIsButtonDisabled(true);
-                onChangePage("pretestEdit", AppContext_master.DetailMateriEdit = AppContext_master.MateriForm, AppContext_master.count += 1)
+                window.location.reload();
             });
         } else {
             Swal.fire({

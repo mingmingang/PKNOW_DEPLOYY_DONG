@@ -94,7 +94,7 @@ function CardKonfirmasi({ data, onChangePage, isShow }) {
                 </a>
                 <Button
                   iconName="user"
-                  classType="primary btn-sm"
+                  classType="primary btn-sm py-2"
                   label="Lihat Semua"
                   onClick={() => onChangePage("detail", data)}
                   title="Lihat detail Persetujuan Anggota Keahlian"

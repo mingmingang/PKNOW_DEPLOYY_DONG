@@ -497,6 +497,13 @@ export default function PengajuanKelompokKeahlian({ onChangePage }){
                 ↓ Menunggu Persetujuan Prodi
 
               </div>
+              {listKK.filter((value) => value.Status === "Menunggu Acc")
+                  .length == 0 && (
+                  <Alert
+                    type="warning mt-2 mr-4 ml-4"
+                    message="Anda belum melakukan pengajuan"
+                  />
+                )}
                 <div className="row mt-3 gx-4" style={{marginLeft:"5px"}}>
                   {listKK
                     ?.filter((value) => {
@@ -525,6 +532,13 @@ export default function PengajuanKelompokKeahlian({ onChangePage }){
               >
                 ↓ Kelompok Keahlian Lainnya
               </div>
+              {listKK.filter((value) => value.Status != "Menunggu Acc")
+                  .length == 0 && (
+                  <Alert
+                    type="warning mt-2 mr-4 ml-4"
+                    message="Belum ada kelompok Keahlian"
+                  />
+                )}
                      <div className="row mt-3 gx-4" style={{marginLeft:"5px"}}>
                   {listKK
                     ?.filter((value) => {

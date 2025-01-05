@@ -1714,7 +1714,7 @@ export default function MasterPreTestEdit({ onChangePage, withID }) {
                           onClick={() =>
                             onChangePage(
                               "pretestEditNot",
-                              AppContext_master.MateriForm
+                              AppContext_master.MateriForm = AppContext_master.DetailMateriEdit
                             )
                           }
                           className="text-primary"

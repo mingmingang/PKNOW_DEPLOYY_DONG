@@ -113,9 +113,9 @@ export default function PersetujuanAnggotaKK({ onChangePage }) {
                 )}
 
                 <div className="container">
-                  <div className="row mt-0 gx-4">
+                  <div className="row mt-0 gx-4 mb-4">
                     {currentData.filter((value) => {
-                      return value.data.Status === "Aktif";
+                      return value.Status === "Aktif";
                     }).length === 0 && (
                       <div className="" style={{ margin: "5px 20px" }}>
                         <Alert type="warning" message="Tidak ada data!" />

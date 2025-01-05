@@ -138,10 +138,16 @@ export default function MasterTestPreTest({
                         hour12: false,
                       }).format(new Date(item["Tanggal Quiz"])),
                       Nilai: item.Status == "Reviewed" ? item.Nilai : "",
+                      // Keterangan:
+                      //   item.Status == "Reviewed"
+                      //     ? item.JumlahBenar + " Benar / " + totalSoal + " Soal"
+                      //     : "Sedang direview oleh Tenaga Pendidik",
                       Keterangan:
-                        item.Status == "Reviewed"
-                          ? item.JumlahBenar + " Benar / " + totalSoal + " Soal"
-                          : "Sedang direview oleh Tenaga Pendidik",
+                      item.Status == "Reviewed"
+                        ? item.Nilai > 80
+                          ? "Anda Lulus Kuis"
+                          : "Tidak Lulus Kuis"
+                        : "Sedang direview oleh Tenaga Pendidik",                  
                       Aksi: item.Status == "Reviewed" ? ["Detail"] : [""],
                       Alignment: [
                         "center",
@@ -374,7 +380,7 @@ export default function MasterTestPreTest({
                     memulainya dengan mengklik tombol tersebut. Begitu tombol
                     ditekan, waktu akan mulai berjalan, dan Anda harus
                     menyelesaikan semua soal dalam jangka waktu yang telah
-                    ditetapkan.
+                    ditetapkan. Anda pelu mencapai <strong>80 Point</strong> untuk <span style={{color:"green", fontWeight:"bold"}}>Lulus</span> pada kuis ini.
                   </p>
                 </div>
 
