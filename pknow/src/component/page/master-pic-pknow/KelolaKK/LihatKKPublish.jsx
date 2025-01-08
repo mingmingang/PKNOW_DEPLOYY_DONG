@@ -212,7 +212,7 @@ export default function KKDetailPublish({ onChangePage, withID }) {
                 {formData.programStudi}
               </h5>
               <h4 className="fw-semibold" style={{ marginTop: "30px" }}>Tentang Kelompok Keahlian</h4>
-              <p className="py-2" style={{ textAlign: "justify", width: "600px" }}>
+              <p className="py-2" style={{ textAlign: "justify", width: "550px" }}>
                 {formData.deskripsi}
               </p>
               <div className="">
@@ -232,7 +232,8 @@ export default function KKDetailPublish({ onChangePage, withID }) {
                   borderRadius: "20px",
                   objectFit: "",
                   border: "1px solid #ccc", // Border dengan warna abu-abu muda
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Drop shadow
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                  marginLeft:"-50px" // Drop shadow
                 }}
               />
             </div>

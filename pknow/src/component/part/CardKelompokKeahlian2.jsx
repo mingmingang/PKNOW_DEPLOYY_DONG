@@ -3,6 +3,7 @@ import Button from "./Button copy";
 import Icon from "./Icon";
 import CardProgram from "./CardProgram2";
 import { colors } from "@mui/material";
+import Alert from "./Alert";
 
 const MAX_DESCRIPTION_LENGTH = 300;
 
@@ -101,6 +102,16 @@ const CardKK = ({ kk, onChangePage }) => {
             <hr style={{ opacity: "0.1" }} />
             {isContentVisible && (
               <>
+                  {
+                    kk.programs.length === 0 ? (
+                      <div className="">
+                       <Alert
+                  type="warning mt-3"
+                  message="Belum ada program!"
+                />
+                      </div>
+                    ) : null
+                  }
                 {kk.programs.map((program) => (
                   <CardProgram key={program.Key} program={program} onChangePage={onChangePage} />
                 ))}

@@ -78,9 +78,9 @@ function CardKonfirmasi({ data, onChangePage, isShow }) {
               </p>
               <div className="d-flex justify-content-between align-items-center">
                 <a
-                  href="#"
                   className="text-decoration-none"
                   onClick={handleToggleText}
+                  style={{cursor:"pointer"}}
                 >
                   <span className="fw-semibold">
                     {showAllText ? "Ringkas" : "Selengkapnya"}

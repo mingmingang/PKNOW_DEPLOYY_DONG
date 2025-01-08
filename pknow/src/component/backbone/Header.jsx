@@ -35,6 +35,7 @@ export default function Header({
     "Riwayat Pengajuan": "fas fa-history",
     "Kelola Program": "fas fa-tasks",
     "Kelola Materi": "fas fa-book-open",
+    "Class Repository": "fas fa-book-open",
   };
 
   const handleConfirmYes = () => {

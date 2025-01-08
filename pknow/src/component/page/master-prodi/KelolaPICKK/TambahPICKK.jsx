@@ -232,6 +232,7 @@ export default function TambahPIC({ onChangePage, withID }) {
             error: true,
             message: "Gagal mengubah status kelompok keahlian.",
           }));
+          
         } else {
           UseFetch(API_LINK + "Utilities/createNotifikasi", {
             p1: "SENTTOTENAGAPENDIDIK",

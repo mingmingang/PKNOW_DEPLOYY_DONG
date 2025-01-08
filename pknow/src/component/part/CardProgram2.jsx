@@ -3,6 +3,9 @@ import Button from "./Button copy";
 import CardKategoriProgram from "./CardKategoriProgram2";
 import Icon from "./Icon";
 import AppContext_test from "../page/Materi/master-test/TestContext";
+import Alert from "./Alert";
+import { decode } from "html-entities";
+import { API_LINK } from "../util/Constants";
 
 const MAX_DESCRIPTION_LENGTH = 200; // Sesuaikan dengan panjang maksimum yang diinginkan
 
@@ -30,6 +33,17 @@ const CardProgram = ({ program, onChangePage }) => {
             : ""
         }`}
       >
+        {console.log("program", program)}
+       <div className="">
+       <img
+          alt={`image`}
+          className="cover-daftar-kk"
+          height="200"
+          src={`${API_LINK}Upload/GetFile/${program.Gambar}`}
+          width="300"
+          style={{marginRight:"20px", borderRadius:"20px"}}
+        />
+       </div>
         <div className="">
           <p
             className="fw-medium mb-0"
@@ -69,7 +83,7 @@ const CardProgram = ({ program, onChangePage }) => {
               </>
             ) : (
               <>
-                {program.Deskripsi}
+                {decode(program.Deskripsi)}
                 {expandDeskripsi && (
                   <a
                     className="btn btn-link text-decoration-none p-0"
@@ -115,6 +129,16 @@ const CardProgram = ({ program, onChangePage }) => {
             </p>
           </div>
           <div className=" card-kategori-program-container">
+          {
+                    program.categories.length === 0 ? (
+                      <div className="">
+                       <Alert
+                  type="warning mt-3 mr-3 ml-3"
+                  message="Belum ada kategori!"
+                />
+                      </div>
+                    ) : null
+                  }
             {program.categories.map((kategori) => (
               <CardKategoriProgram
                 key={kategori.Key}

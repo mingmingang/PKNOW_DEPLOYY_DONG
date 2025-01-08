@@ -188,7 +188,6 @@ export default function BerandaUtama() {
         <div className="">
       <h4 style={{ textAlign: "center", color: "#0A5EA8", paddingTop: "60px", fontWeight: "bold" }}>
           Mentor dan Tenaga Pendidik P-KNOW
-
         </h4>
         </div>
         <Slider />

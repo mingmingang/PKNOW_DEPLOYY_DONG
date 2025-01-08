@@ -12,6 +12,7 @@ import { data } from "jquery";
 import BackPage from "../../../../assets/backPage.png";
 import Konfirmasi from "../../../part/Konfirmasi";
 import pknowMaskot from "../../../../assets/pknowmaskot.png";
+import { decode } from "html-entities";
 
 export default function KKDetailProgram({ onChangePage, withID }) {
   console.log("SDA", JSON.stringify(withID));
@@ -103,7 +104,6 @@ export default function KKDetailProgram({ onChangePage, withID }) {
           status: "Aktif",
           KKid: withID.Key,
         });
-
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data program.");
         } else if (data === "data kosong") {
@@ -148,7 +148,7 @@ export default function KKDetailProgram({ onChangePage, withID }) {
             })
           );
 
-          console.log(updatedListProgram);
+          console.log("data program",updatedListProgram);
           setListProgram(updatedListProgram);
           setIsLoading(false);
           break;
@@ -276,6 +276,7 @@ export default function KKDetailProgram({ onChangePage, withID }) {
             listProgram[0].Message ? (
               <p>Tidak Ada Program</p>
             ) : (
+             
               listProgram.map((data, index) => (
                 <div
                   key={data.Key}
@@ -293,7 +294,7 @@ export default function KKDetailProgram({ onChangePage, withID }) {
                         width: "80%",
                       }}
                     >
-                      {data.Deskripsi}
+                      {decode(data.Deskripsi)}
                     </p>
                   </div>
                   <div className="p-3 pt-0">

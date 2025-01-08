@@ -11,6 +11,9 @@ import Loading from "../../../part/Loading";
 import Alert from "../../../part/Alert";
 import BackPage from "../../../../assets/backPage.png";
 import Konfirmasi from "../../../part/Konfirmasi";
+import NoImage from "../../../../assets/NoImage.png";
+import FileUpload from "../../../part/FileUpload";
+import UploadFile from "../../../util/UploadFile";
 
 
 export default function ProgramAdd({ onChangePage, withID }) {
@@ -19,19 +22,24 @@ export default function ProgramAdd({ onChangePage, withID }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isBackAction, setIsBackAction] = useState(false);  
+  const [filePreview, setFilePreview] = useState(false);
+  const fileGambarRef = useRef(null);
 
   const formDataRef = useRef({
     idKK: "",
     idKry: "",
     nama: "",
     deskripsi: "",
+    pro_gambar: "",
   });
+  
 
   const userSchema = object({
     idKK: string(),
     idKry: string(),
     nama: string().max(100, "maksimum 100 karakter").required("harus diisi"),
     deskripsi: string().required("harus dipilih"),
+    pro_gambar: string(),
   });
 
   useEffect(() => {
@@ -40,6 +48,7 @@ export default function ProgramAdd({ onChangePage, withID }) {
       idKry: withID["Kode Karyawan"],
       nama: "",
       deskripsi: "",
+      pro_gambar: "",
     };
   }, [withID]); 
 
@@ -49,6 +58,7 @@ export default function ProgramAdd({ onChangePage, withID }) {
       idKry: withID["Kode Karyawan"],
       nama: "",
       deskripsi: "",
+      pro_gambar: "",
     };
   };
 
@@ -67,40 +77,102 @@ export default function ProgramAdd({ onChangePage, withID }) {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-
+  
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
-
+  
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsLoading(true);
       setIsError((prevError) => {
         return { ...prevError, error: false };
       });
-
+  
+      const uploadPromises = [];
       setErrors({});
-
-      UseFetch(API_LINK + "Program/CreateProgram", formDataRef.current)
-        .then((data) => {
-          console.log("program",formDataRef.current)
-          if (data === "ERROR") {
-            setIsError((prevError) => {
-              return {
-                ...prevError,
-                error: true,
-                message: "Terjadi kesalahan: Gagal menyimpan data program.",
-              };
-            });
-          } else {
-            SweetAlert("Sukses", "Data Program berhasil disimpan", "success");
-            onChangePage("index");
-          }
-        })
-        .finally(() => setIsLoading(false)); // Changed .then() to .finally() to ensure loading state is reset
+  
+      if (fileGambarRef.current.files.length > 0) {
+        uploadPromises.push(
+          UploadFile(fileGambarRef.current).then(
+            (data) => (formDataRef.current["pro_gambar"] = data.Hasil)
+          )
+        );
+      }
+  
+      try {
+        // Tunggu semua promise selesai
+        await Promise.all(uploadPromises);
+  
+        // Lakukan permintaan ke API setelah semua upload selesai
+        const data = await UseFetch(
+          API_LINK + "Program/CreateProgram",
+          formDataRef.current
+        );
+  
+        console.log("program", formDataRef.current);
+  
+        if (data === "ERROR") {
+          setIsError((prevError) => {
+            return {
+              ...prevError,
+              error: true,
+              message: "Terjadi kesalahan: Gagal menyimpan data program.",
+            };
+          });
+        } else {
+          SweetAlert("Sukses", "Data Program berhasil disimpan", "success");
+          onChangePage("index");
+        }
+      } catch (error) {
+        // Tangani error saat upload atau permintaan API gagal
+        console.error("Error:", error);
+        setIsError((prevError) => {
+          return {
+            ...prevError,
+            error: true,
+            message: "Terjadi kesalahan saat memproses permintaan.",
+          };
+        });
+      } finally {
+        // Pastikan state loading di-reset
+        setIsLoading(false);
+      }
     }
   };
+  
+
+  const handleFileChange = (ref, extAllowed) => {
+    const { name, value } = ref.current;
+    const file = ref.current.files[0];
+    const fileName = file ? file.name : "";
+    const fileSize = file ? file.size : 0;
+    const fileExt = fileName.split(".").pop().toLowerCase();
+    const validationError = validateInput(name, value, userSchema);
+    let error = "";
+
+    if (fileSize / 1024576 > 10) error = "berkas terlalu besar";
+    else if (!extAllowed.split(",").includes(fileExt))
+      error = "format berkas tidak valid";
+
+    if (error) ref.current.value = "";
+    else {
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFilePreview(reader.result); // Set the preview
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [validationError.name]: error,
+    }));
+  };
+
 
   
 
@@ -145,6 +217,62 @@ export default function ProgramAdd({ onChangePage, withID }) {
           <form onSubmit={handleAdd}>
             <div className="card">
               <div className="card-body p-4">
+              <div className="row">
+              <div className="col-lg-4" style={{ display: "flex" }}>
+                <div className="file-preview">
+                  <div className="preview-img">
+                    {filePreview ? (
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          marginRight: "30px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <img
+                          src={filePreview}
+                          alt="Preview"
+                          style={{
+                            width: "200px",
+                            height: "auto",
+                            borderRadius: "20px",
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          marginRight: "30px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <img
+                          src={NoImage} // Use fallback image if no preview available
+                          alt="No Preview Available"
+                          style={{
+                            width: "200px",
+                            height: "auto",
+                            borderRadius: "20px",
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="fileupload">
+                  <FileUpload
+                    forInput="gambarInputref"
+                    label="Gambar Program (.png)"
+                    formatFile=".png"
+                    ref={fileGambarRef}
+                    onChange={() => handleFileChange(fileGambarRef, "png")}
+                    errorMessage={errors.pro_gambar}
+                    isRequired={true}
+                  />
+                </div>
+              </div>
+            </div>
                 <div className="row">
                   <div className="col-lg-12">
                     <Input

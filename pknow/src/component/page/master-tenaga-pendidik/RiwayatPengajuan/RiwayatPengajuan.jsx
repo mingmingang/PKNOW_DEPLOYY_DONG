@@ -88,42 +88,68 @@ export default function RiwayatPengajuan({onChangePage}) {
   const searchFilterKry = useRef(); 
 
   function handleSearch() {
+    if (!currentFilter.kry_id) {
+      console.error("kry_id belum diatur. Tidak dapat melanjutkan pencarian.");
+      return;
+    }
+  
     setIsLoading(true);
+  
     setCurrentFilter((prevFilter) => ({
       ...prevFilter,
       page: 1,
-      query: searchQuery.current.value,
-      sort: searchFilterSort.current.value,
-      kry_id: searchFilterKry.current.value,
+      query: searchQuery.current?.value || "", // Gunakan nilai kosong jika undefined
+      sort: searchFilterSort.current?.value || "[Nama Kelompok Keahlian] asc",
+      kry_id: currentFilter.kry_id, // Pastikan kry_id digunakan
     }));
+  
+    console.log("Updated Filter for Search:", {
+      page: 1,
+      query: searchQuery.current?.value || "",
+      sort: searchFilterSort.current?.value || "[Nama Kelompok Keahlian] asc",
+      kry_id: currentFilter.kry_id,
+    });
   }
+  
+  
 
   const getUserKryID = async () => {
     setIsLoading(true);
     setIsError((prevError) => ({ ...prevError, error: false }));
-
+  
     try {
       while (true) {
-        let data = await UseFetch(API_LINK + "Utilities/GetUserLogin", {
+        const data = await UseFetch(API_LINK + "Utilities/GetUserLogin", {
           param: activeUser,
         });
-
+  
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil daftar prodi.");
         } else if (data.length === 0) {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         } else {
-          setUserData(data[0]);
+          const user = data[0];
+          setUserData(user);
+  
+          // Perbarui filter dengan kry_id dari hasil API
           setCurrentFilter((prevFilter) => ({
             ...prevFilter,
-            kry_id: data[0].kry_id,
+            kry_id: user.kry_id,
           }));
+  
+          console.log("User Data:", user); // Verifikasi data user
+          console.log("Updated Filter:", {
+            ...currentFilter,
+            kry_id: user.kry_id,
+          });
+  
           setIsLoading(false);
           break;
         }
       }
     } catch (error) {
-      setIsLoading(true);
+      console.error("Error saat mengambil kry_id:", error);
+      setIsLoading(false);
       setIsError((prevError) => ({
         ...prevError,
         error: true,
@@ -131,6 +157,7 @@ export default function RiwayatPengajuan({onChangePage}) {
       }));
     }
   };
+  
 
   useEffect(() => {
     getUserKryID();
@@ -199,7 +226,7 @@ export default function RiwayatPengajuan({onChangePage}) {
                 height: "40px",
               }}
             >
-              <Input
+             <Input
                 ref={searchQuery}
                 forInput="pencarianKK"
                 placeholder="Cari"
@@ -210,6 +237,7 @@ export default function RiwayatPengajuan({onChangePage}) {
                   borderRadius: "20px",
                 }}
               />
+
               <Button2
                 iconName="search"
                 classType="px-4"
@@ -254,7 +282,7 @@ export default function RiwayatPengajuan({onChangePage}) {
             <div className="tes" style={{ display: "flex" }}>
               <div className="">
                 <Filter handleSearch={handleSearch}>
-                  <DropDown
+                <DropDown
                     ref={searchFilterSort}
                     forInput="ddUrut"
                     label="Urut Berdasarkan"
@@ -262,6 +290,7 @@ export default function RiwayatPengajuan({onChangePage}) {
                     arrData={dataFilterSort}
                     defaultValue="[Nama Kelompok Keahlian] asc"
                   />
+
                 </Filter>
               </div>
               </div>

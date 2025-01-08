@@ -10,6 +10,7 @@ import ReactPlayer from "react-player";
 import WordViewer from "./DocumentViewer";
 import ExcelViewer from "./ExcelViewer";
 import axios from "axios";
+import { decode } from "html-entities";
 
 
 
@@ -131,7 +132,7 @@ export default function DetailDaftarPustaka({ onChangePage, withID }) {
             </div>
             <div className="detail-informasi-daftar-pustaka">
               <h3>Deskripsi</h3>
-              <p>{fileData.deskripsi}</p>
+              <p style={{textAlign:"justify"}}>{decode(fileData.deskripsi)}</p>
             </div>
             <div className="detail-informasi-daftar-pustaka">
               <h3>Kata Kunci</h3>

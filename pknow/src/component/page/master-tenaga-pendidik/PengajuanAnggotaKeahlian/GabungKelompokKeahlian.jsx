@@ -346,6 +346,8 @@ export default function PengajuanAdd({ onChangePage, withID }) {
               creaby: activeUser,
               lampirans: JSON.stringify(formDataRef.current.lampirans, null, 2),
               })
+
+              console.log("responn", response)
             if (response === "ERROR") {
               setIsError({
                 error: true,

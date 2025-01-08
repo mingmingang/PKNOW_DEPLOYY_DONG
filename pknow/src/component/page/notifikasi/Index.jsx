@@ -48,7 +48,7 @@ export default function NotifikasiIndex() {
   const [currentFilter, setCurrentFilter] = useState({
     page: 1,
     query: "",
-    sort: "[Waktu] asc",
+    sort: "[Waktu] desc",
     app: APPLICATION_ID,
     status: "Belum Dibaca",
   });

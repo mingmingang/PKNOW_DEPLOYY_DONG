@@ -49,7 +49,8 @@ function CardMateri({
   const handleReviewJawaban = (book) => {
     AppContext_test.materiId = book.Key;
     AppContext_master.materiId = book.Key;
-    onReviewJawaban("reviewjawaban", true, book.Key, true);
+    AppContext_master.MateriForm = book;
+    onReviewJawaban("reviewjawaban", true, book.Key, true, AppContext_master.MateriForm);
   };
 
   // onClick={() => onDetail("materiDetail", AppContext_test.DetailMateri = book, AppContext_master.DetailMateri = book)}

@@ -3,6 +3,8 @@ import Button from "./Button copy";
 import Icon from "./Icon";
 import Input from "./Input";
 import { colors } from "@mui/material";
+import { API_LINK } from "../util/Constants";
+import { decode } from "html-entities";
 
 const CardProgram = ({
   id,
@@ -47,6 +49,14 @@ const CardProgram = ({
           isActive ? "align-items-center border-bottom border-primary" : ""
         }`}
       >
+        <img
+          alt={`image`}
+          className="cover-daftar-kk"
+          height="200"
+          src={`${API_LINK}Upload/GetFile/${data.Gambar}`}
+          width="320"
+          style={{marginRight:"20px", borderRadius:"20px", objectFit:"cover"}}
+        />
         <div className="">
         <p
           className="fw-medium"
@@ -67,7 +77,7 @@ const CardProgram = ({
             textAlign: "justify",
           }}
         >
-          {data.Deskripsi}
+          {decode(data.Deskripsi)}
         </p>
         </div>
         

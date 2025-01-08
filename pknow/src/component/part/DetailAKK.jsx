@@ -274,7 +274,7 @@ export default function DetailAKK({
           kry: id,
         })
           .then((data) => {
-            console.log(data);
+            console.log("testt",data);
             if (data === "ERROR" || data.length === 0) setIsError(true);
             else {
               console.log("simiii")

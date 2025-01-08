@@ -8,6 +8,9 @@ import Filter from "../../../part/Filter";
 import Icon from "../../../part/Icon";
 import { API_LINK } from "../../../util/Constants";
 import UseFetch from "../../../util/UseFetch";
+import { colors } from "@mui/material";
+import maskotPknow from "../../../../assets/pknowmaskot.png";
+
 
 export default function KKDetailPublish({ onChangePage, withID }) {
   console.log(withID);
@@ -63,6 +66,8 @@ export default function KKDetailPublish({ onChangePage, withID }) {
       }));
     }
   };
+
+  console.log("with id", withID);
 
   const getListProgram = async () => {
     setIsError({ error: false, message: "" });
@@ -158,9 +163,7 @@ export default function KKDetailPublish({ onChangePage, withID }) {
         </div>
       )}
       <div className="card" style={{margin:"100px 100px"}}>
-        <div className="card-header bg-primary fw-medium text-white">
-          Detail Kelompok Keahlian
-        </div>
+       
         <div className="card-body">
           <div className="row pt-2">
             <div className="col-lg-7 px-4">
@@ -173,12 +176,12 @@ export default function KKDetailPublish({ onChangePage, withID }) {
                 {formData.programStudi}
               </h6>
               <div className="pt-2 ps-2">
-                <Icon
+                {/* <Icon
                   name="user"
                   cssClass="p-0 ps-1 text-dark"
                   title="PIC Kelompok Keahlian"
-                />{" "}
-                <span>PIC : {formData.personInCharge}</span>
+                />{" "} */}
+                {/* <span>PIC : {formData.personInCharge}</span> */}
               </div>
               <hr className="mb-0" style={{ opacity: "0.2" }} />
               <p className="py-3" style={{ textAlign: "justify" }}>
@@ -206,7 +209,7 @@ export default function KKDetailPublish({ onChangePage, withID }) {
                           ></div>
                           <div className="p-1 ps-2 d-flex">
                             <img
-                              src="https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg"
+                              src={maskotPknow}
                               alt={ag["Nama Anggota"]}
                               className="img-fluid rounded-circle"
                               width="45"
@@ -223,11 +226,12 @@ export default function KKDetailPublish({ onChangePage, withID }) {
                     ))}
                     <div className="text-end">
                       <Button
-                        classType="light btn-sm text-primary text-decoration-underline px-3 mt-2"
+                        classType=" text-decoration-none px-3 mt-2"
                         type="submit"
                         label="Lihat Semua"
                         data-bs-toggle="modal"
                         data-bs-target="#modalAnggota"
+                        style={{backgroundColor:"#0A5EA8", color:"white"}}
                       />
                     </div>
                   </div>
@@ -340,45 +344,6 @@ export default function KKDetailPublish({ onChangePage, withID }) {
               ></button>
             </div>
             <div className="modal-body">
-              {/* <div className="input-group mb-4">
-                <Input
-                  //   ref={searchQuery}
-                  forInput="pencarianProduk"
-                  placeholder="Cari"
-                />
-                <Button
-                  iconName="search"
-                  classType="primary px-4"
-                  title="Cari"
-                  //   onClick={handleSearch}
-                />
-                <Filter>
-                  <DropDown
-                    // ref={searchFilterSort}
-                    forInput="ddUrut"
-                    label="Urut Berdasarkan"
-                    type="none"
-                    // arrData={dataFilterSort}
-                    defaultValue="[Kode Produk] asc"
-                  />
-                  <DropDown
-                    // ref={searchFilterJenis}
-                    forInput="ddJenis"
-                    label="Jenis Produk"
-                    type="semua"
-                    // arrData={dataFilterJenis}
-                    defaultValue=""
-                  />
-                  <DropDown
-                    // ref={searchFilterStatus}
-                    forInput="ddStatus"
-                    label="Status"
-                    type="none"
-                    // arrData={dataFilterStatus}
-                    defaultValue="Aktif"
-                  />
-                </Filter>
-              </div> */}
               {listAnggota.length > 0 ? (
                 listAnggota[0].Message ? (
                   <p>Tidak Ada Anggota Aktif</p>
@@ -398,7 +363,7 @@ export default function KKDetailPublish({ onChangePage, withID }) {
                         ></div>
                         <div className="p-1 ps-2 d-flex">
                           <img
-                            src="https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg"
+                            src={maskotPknow}
                             alt={ag["Nama Anggota"]}
                             className="img-fluid rounded-circle"
                             width="45"

@@ -14,6 +14,8 @@ import he from "he";
 import Cookies from "js-cookie";
 import { decryptId } from "../../../../util/Encryptor";
 import Search from "../../../../part/Search";
+import AppContext_master from "../MasterContext.jsx";
+
 
 export default function MasterMateriReviewJawaban({
   onChangePage,
@@ -34,69 +36,36 @@ export default function MasterMateriReviewJawaban({
   const [reviewStatus, setReviewStatus] = useState([]);
   const [formDataReview, setFormDataReview] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const [dataQuiz, setDataQuiz] = useState([]);
+  const [selectedQuizType, setSelectedQuizType] = useState("Pretest");// Default ke Pretest
 
-  const handleSubmitAction = async () => {
+  const fetchDataQuiz = async () => {
+    setIsLoading(true);
+    setIsError(false);
+    console.log("tesss")
     try {
-      setIsLoading(true);
-      for (const review of formDataReview) {
-        const {
-          idSoal,
-          isCorrect,
-          materiId,
-          idKaryawan,
-          idQuiz,
-          idTransaksi,
-          value,
-        } = review;
-        const response = await axios.post(API_LINK + "Quiz/SaveReviewQuiz", {
-          p1: idTransaksi,
-          p2: idSoal,
-          p3: isCorrect.toString(),
-          p4: materiId,
-          p5: idKaryawan,
-          p6: idQuiz,
-          p7: activeUser,
-          p8: value,
-        });
-        SweetAlert(
-          "Sukses",
-          "Review jawaban telah berhasil disimpan!",
-          "success"
-        );
-        console.log("kirim",{
-          p1: idTransaksi,
-          p2: idSoal,
-          p3: isCorrect.toString(),
-          p4: materiId,
-          p5: idKaryawan,
-          p6: idQuiz,
-          p7: activeUser,
-          p8: value,
-        })
+      const response = await axios.post(API_LINK + "Quiz/GetDataQuizByIdMateri", {
+        materiId: AppContext_test.materiId,
+      });
+      console.log("responsesss", response.data)
+      if (response.data.length === 0) {
+        setDataQuiz([]);
+      } else {
+        console.log("yuhuuu", response.data)
+        setDataQuiz(response.data);
+        if (response.data.length === 1) {
+          setSelectedQuizType(response.data[0].quizTipe);
+          console.log("quis tipe", response.data[0].quizTipe)
+        }
       }
-      setIsLoading(false);
-      onChangePage("index");
     } catch (error) {
+      setIsError(true);
+      console.error("Error fetching quiz data:", error);
+    } finally {
       setIsLoading(false);
-      console.error("Error saving review:", error);
     }
   };
-
-  const handleSaveReview = () => {
-    Swal.fire({
-      title: "Apakah anda yakin sudah selesai?",
-      text: "Jawaban akan disimpan dan tidak dapat diubah lagi.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya, submit",
-      cancelButtonText: "Tidak",
-      reverseButtons: true,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        handleSubmitAction();
-      }
-    });
-  };
+  console.log("data materiii", AppContext_master.MateriForm);
 
   useEffect(() => {
     let isMounted = true;
@@ -177,47 +146,49 @@ export default function MasterMateriReviewJawaban({
         }
       }
     };
-
-    const fetchDataWithRetry = async (retries = 10, delay = 1000) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          setIsLoading(true);
-          const response = await axios.post(
-            API_LINK + "Quiz/GetDataTransaksiReview",
-            {
-              materiId: AppContext_test.materiId,
-            }
-          );
-         
-          if (response.data.length !== 0) {
-            setIsLoading(false);
-            const filteredTransaksi = response.data.filter(
-              (transaksi) =>
-                transaksi.trq_status === "Not Reviewed" &&
-                (transaksi.que_tipe === "Essay" || transaksi.que_tipe === "Praktikum")
-            );
-
-            console.log("hasil tr", filteredTransaksi)
-            
-            return filteredTransaksi;
-          }
-        } catch (error) {
-          console.error("Error fetching quiz data:", error);
-          if (i < retries - 1) {
-            await new Promise((resolve) => setTimeout(resolve, delay));
-          } else {
-            throw error;
-          }
-        }
-      }
-    };
-
+    
     fetchData();
 
     return () => {
       isMounted = false; // cleanup flag
     };
-  }, [AppContext_test.materiId, AppContext_test.refresh]);
+  }, [AppContext_test.materiId, AppContext_test.refresh, selectedQuizType]);
+
+
+  const fetchDataWithRetry = async (retries = 1, delay = 1000) => {
+    for (let i = 0; i < retries; i++) {
+      console.log("dataaa selectedd", selectedQuizType)
+      try {
+        setIsLoading(true);
+        const response = await axios.post(API_LINK + "Quiz/GetDataTransaksiReview", {
+          materiId: AppContext_test.materiId,
+          quiTipe: selectedQuizType, // Kirim tipe quiz yang dipilih
+        });
+        if (response.data.length === 0) {
+          setCurrentData([]);
+        } 
+  
+        if (response.data.length !== 0) {
+          setIsLoading(false);
+          const filteredTransaksi = response.data.filter(
+            (transaksi) =>
+              transaksi.trq_status === "Not Reviewed" &&
+              (transaksi.que_tipe === "Essay" || transaksi.que_tipe === "Praktikum")
+          );
+  
+          console.log("hasil tr", filteredTransaksi);
+          return filteredTransaksi;
+        }
+      } catch (error) {
+        console.error("Error fetching quiz data:", error);
+        if (i < retries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          throw error;
+        }
+      }
+    }
+  };
 
   const fetchQuestions = async (questionType, retries = 10, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
@@ -278,6 +249,25 @@ export default function MasterMateriReviewJawaban({
     }
   };
 
+
+  useEffect(() => {
+    fetchDataQuiz();
+  }, []);
+
+  useEffect(() => {
+    if (selectedQuizType) {
+      fetchDataWithRetry();
+    }
+  }, [selectedQuizType]);
+
+  useEffect(() => {
+    if (currentData.length > 0) {
+      const quiTipe = currentData[0].qui_tipe;
+      fetchQuestions(quiTipe);
+    }
+  }, [currentData]);
+
+  
   useEffect(() => {
     if (currentData.length > 0) {
       fetchQuestions(currentData[currentRespondentIndex].qui_tipe);
@@ -303,6 +293,70 @@ export default function MasterMateriReviewJawaban({
     console.log("badges: ", badges);
     console.log("review status: ", reviewStatus);
   }, [badges, reviewStatus]);
+
+
+  const handleSubmitAction = async () => {
+    try {
+      setIsLoading(true);
+      for (const review of formDataReview) {
+        const {
+          idSoal,
+          isCorrect,
+          materiId,
+          idKaryawan,
+          idQuiz,
+          idTransaksi,
+          value,
+        } = review;
+        const response = await axios.post(API_LINK + "Quiz/SaveReviewQuiz", {
+          p1: idTransaksi,
+          p2: idSoal,
+          p3: isCorrect.toString(),
+          p4: materiId,
+          p5: idKaryawan,
+          p6: idQuiz,
+          p7: activeUser,
+          p8: value,
+        });
+        SweetAlert(
+          "Sukses",
+          "Review jawaban telah berhasil disimpan!",
+          "success"
+        );
+        console.log("kirim",{
+          p1: idTransaksi,
+          p2: idSoal,
+          p3: isCorrect.toString(),
+          p4: materiId,
+          p5: idKaryawan,
+          p6: idQuiz,
+          p7: activeUser,
+          p8: value,
+        })
+      }
+      setIsLoading(false);
+      onChangePage("index");
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error saving review:", error);
+    }
+  };
+
+  const handleSaveReview = () => {
+    Swal.fire({
+      title: "Apakah anda yakin sudah selesai?",
+      text: "Jawaban akan disimpan dan tidak dapat diubah lagi.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, submit",
+      cancelButtonText: "Tidak",
+      reverseButtons: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleSubmitAction();
+      }
+    });
+  };
 
   const handleReview = (
     idSoal,
@@ -406,6 +460,40 @@ export default function MasterMateriReviewJawaban({
             showInput={false}
           />
         </div>
+        <div className="d-flex justify-content-end">
+        <div className="">
+        </div>
+        <div className="" style={{marginBottom:"0px", marginRight:"100px", marginTop:"25px"}}>
+        {dataQuiz.length > 1 && (
+  <>
+    <div className="d-flex">
+      <div className="mr-3 mt-1 fw-bold">
+        <p style={{ color: "#0A5EA8" }}>Tipe Kuis :</p>
+      </div>
+      <div>
+        <Form.Select
+          value={selectedQuizType}
+          onChange={(e) => setSelectedQuizType(e.target.value)}
+        >
+          {dataQuiz
+            .sort((a, b) => {
+              // Prioritaskan "Pretest" sebelum "Posttest"
+              if (a.quizTipe === "Pretest") return -1;
+              if (b.quizTipe === "Pretest") return 1;
+              return 0;
+            })
+            .map((quiz) => (
+              <option key={quiz.quizId} value={quiz.quizTipe}>
+                {quiz.quizTipe}
+              </option>
+            ))}
+        </Form.Select>
+      </div>
+    </div>
+  </>
+)}
+          </div>
+      </div>
         <div
           className="flex-fill mb-0 mt-3"
           style={{ marginRight: "100px", marginLeft: "100px" }}
@@ -425,6 +513,129 @@ export default function MasterMateriReviewJawaban({
       </>
     );
   }
+
+
+    if (isError) {
+    return (
+      <>
+        <div className="">
+          <Search
+            title="Review Quiz Materi"
+            description="Tenaga Pendidik dapat memeriksa jawaban dari peserta yang telah mengerjakan Pre-Test dan Post-Test yang tersedia didalam materi."
+            placeholder="Cari Kelompok Keahlian"
+            showInput={false}
+          />
+        </div>
+        <div className="d-flex justify-content-end">
+        <div className="">
+        </div>
+        <div className="" style={{marginBottom:"0px", marginRight:"100px", marginTop:"25px"}}>
+        {dataQuiz.length > 1 && (
+          <>
+          <div className="d-flex">
+            <div className="mr-3 mt-1 fw-bold">
+          <p style={{color:"#0A5EA8"}}>Tipe Kuis : </p>
+          </div>
+          <div className="">
+          <Form.Select
+            value={selectedQuizType}
+            onChange={(e) => setSelectedQuizType(e.target.value)}
+            
+          >
+            {dataQuiz.map((quiz) => (
+              <option key={quiz.quizId} value={quiz.quizTipe}>
+                {quiz.quizTipe}
+              </option>
+            ))}
+          </Form.Select>
+          </div>
+          </div>
+          </>
+        )}
+          </div>
+      </div>
+        <div
+          className="flex-fill mb-0 mt-3"
+          style={{ marginRight: "100px", marginLeft: "100px" }}
+        >
+          <Alert
+            type="warning"
+            message="Belum terdapat peserta yang mengerjakan test"
+          />
+          <div className="float my-4 mx-1">
+            <LocalButton
+              classType="outline-secondary me-2 px-4 py-2"
+              label="Kembali"
+              onClick={() => onChangePage("index")}
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+
+  // if (dataQuiz.length === 0) {
+  //   return (
+  //     <>
+  //     <div className="">
+  //       <Search
+  //         title="Review Quiz Materi"
+  //         description="Tenaga Pendidik dapat memeriksa jawaban dari peserta yang telah mengerjakan Pre-Test dan Post-Test yang tersedia didalam materi."
+  //         placeholder="Cari Kelompok Keahlian"
+  //         showInput={false}
+  //       />
+  //     </div>
+  //     <div
+  //       className="flex-fill mb-0 mt-3"
+  //       style={{ marginRight: "100px", marginLeft: "100px" }}
+  //     >
+  //       <Alert
+  //         type="warning"
+  //         message="Belum ada quiz yang tersedia"
+  //       />
+  //       <div className="float my-4 mx-1">
+  //         <LocalButton
+  //           classType="outline-secondary me-2 px-4 py-2"
+  //           label="Kembali"
+  //           onClick={() => onChangePage("index")}
+  //         />
+  //       </div>
+  //     </div>
+  //   </>
+  //   );
+  // }
+
+  // if (currentData.length === 0) {
+  //   return (
+  //     <>
+  //       <div className="">
+  //         <Search
+  //           title="Review Quiz Materi"
+  //           description="Tenaga Pendidik dapat memeriksa jawaban dari peserta yang telah mengerjakan Pre-Test dan Post-Test yang tersedia didalam materi."
+  //           placeholder="Cari Kelompok Keahlian"
+  //           showInput={false}
+  //         />
+  //       </div>
+  //       <div
+  //         className="flex-fill mb-0 mt-3"
+  //         style={{ marginRight: "100px", marginLeft: "100px" }}
+  //       >
+  //         <Alert
+  //           type="warning"
+  //           message="Belum terdapat peserta yang mengerjakan test"
+  //         />
+  //         <div className="float my-4 mx-1">
+  //           <LocalButton
+  //             classType="outline-secondary me-2 px-4 py-2"
+  //             label="Kembali"
+  //             onClick={() => onChangePage("index")}
+  //           />
+  //         </div>
+  //       </div>
+  //     </>
+  //   );
+  // }
 
   const currentRespondent = currentData[currentRespondentIndex];
   //   const jawabanPenggunaStr = currentRespondent.ans_jawaban_pengguna;
@@ -513,30 +724,43 @@ export default function MasterMateriReviewJawaban({
         />
       </div>
 
-      <div className="d-flex justify-content-between ml-4 mr-4">
+      <div className="d-flex justify-content-end">
         <div className="">
-        <h3>Review Jawaban Quiz</h3>
         </div>
-        <div className="">
-        <select
-            className="form-select me-4 mt-4"
-            value={currentRespondentIndex} // Gunakan currentRespondentIndex sebagai value
-            onChange={(e) => {
-              const selectedIndex = parseInt(e.target.value, 10);
-              setCurrentRespondentIndex(selectedIndex);
-            }}
-            style={{ flex: "1" }}
-          >
-            {Object.values(currentData).map((respondent, index) => (
-              <option key={respondent.trq_id} value={index}>
-                {respondent.nama}
-              </option>
-            ))}
-          </select>
+        <div className="" style={{marginBottom:"0px", marginRight:"70px", marginTop:"25px"}}>
+        {console.log("dataa curr", currentData.length)}
+        {dataQuiz.length > 1 && (
+          <>
+            <div className="d-flex">
+              <div className="mr-3 mt-1 fw-bold">
+                <p style={{ color: "#0A5EA8" }}>Tipe Kuis :</p>
+              </div>
+              <div>
+                <Form.Select
+                  value={selectedQuizType}
+                  onChange={(e) => setSelectedQuizType(e.target.value)}
+                >
+                  {dataQuiz
+                    .sort((a, b) => {
+                      // Prioritaskan "Pretest" sebelum "Posttest"
+                      if (a.quizTipe === "Pretest") return -1;
+                      if (b.quizTipe === "Pretest") return 1;
+                      return 0;
+                    })
+                    .map((quiz) => (
+                      <option key={quiz.quizId} value={quiz.quizTipe}>
+                        {quiz.quizTipe}
+                      </option>
+                    ))}
+                </Form.Select>
+              </div>
+            </div>
+          </>
+        )}
           </div>
       </div>
       
-      <div className="container mb-4" style={{ marginTop: "50px" }}>
+      <div className="container mb-4" style={{ marginTop: "20px" }}>
         <Card className="mb-4">
           <Card.Header
             className="text-light d-flex align-items-center justify-content-between"

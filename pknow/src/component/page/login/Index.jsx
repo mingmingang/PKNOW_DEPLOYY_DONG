@@ -7,8 +7,13 @@ import logoPknow from "../../../assets/pknow.png";
 import Role from "../../part/Role";
 import Cookies from "js-cookie";
 import ReCAPTCHA from "react-google-recaptcha";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMinus, faPlus, faDownload, faSyncAlt } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faMinus,
+  faPlus,
+  faDownload,
+  faSyncAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import maskot from "../../../assets/loginMaskotTMS.png";
 
 import {
@@ -24,7 +29,7 @@ import Loading from "../../part/Loading";
 import Alert from "../../part/AlertLogin";
 import Modal from "../../part/Modal";
 import Input from "../../part/Input";
-import { object, string } from "yup"; 
+import { object, string } from "yup";
 
 export default function Login() {
   const [errors, setErrors] = useState({});
@@ -38,7 +43,7 @@ export default function Login() {
   // const [captchaAnswer, setCaptchaAnswer] = useState(null);
   // const [userCaptchaInput, setUserCaptchaInput] = useState("");
   const loadCaptcha = () => {
-    setCaptchaImage(API_LINK+`Utilities/GetCaptcha?rand=${Math.random()}`);
+    setCaptchaImage(API_LINK + `Utilities/GetCaptcha?rand=${Math.random()}`);
   };
 
   useEffect(() => {
@@ -61,8 +66,6 @@ export default function Login() {
   useEffect(() => {
     generateCaptcha();
   }, []);
-  
-
 
   const RECAPTCHA_SITE_KEY = "6Lf3L6MqAAAAAEQMRqr3AcSCUX9vU3hdSk1L4Y-z";
 
@@ -120,7 +123,6 @@ export default function Login() {
       return;
     }
 
-
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
@@ -132,26 +134,26 @@ export default function Login() {
       setIsError((prevError) => ({ ...prevError, error: false }));
       setErrors({});
 
-  const loginData = {
-      username: formDataRef.current.username,
-      password: formDataRef.current.password,
-      captcha: userCaptchaInput // Input CAPTCHA dari pengguna
-  };
+      const loginData = {
+        username: formDataRef.current.username,
+        password: formDataRef.current.password,
+        captcha: userCaptchaInput, // Input CAPTCHA dari pengguna
+      };
 
-  try {
-      const response = await fetch(`${API_LINK}Utilities/Login`, {
+      try {
+        const response = await fetch(`${API_LINK}Utilities/Login`, {
           method: "POST",
           headers: {
-              "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(loginData),
-          credentials: "include" // Pastikan session cookie dikirim
-      });
-      const data = await response.json();
+          credentials: "include", // Pastikan session cookie dikirim
+        });
+        const data = await response.json();
         console.log("hasil login", data);
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal melakukan autentikasi.");
-        } else if(data.error === "Captcha tidak valid."){
+        } else if (data.error === "Captcha tidak valid.") {
           throw new Error("Captcha yang dimasukan tidak sesuai.");
         } else if (data[0].Status === "LOGIN FAILED") {
           throw new Error("Nama akun atau kata sandi salah.");
@@ -180,9 +182,9 @@ export default function Login() {
   async function handleLoginWithRole(role, nama, peran) {
     try {
       const ipAddress = await fetch("https://api.ipify.org/?format=json")
-        .then(response => response.json())
-        .then(data => data.ip)
-        .catch(error => console.error("Gagal mendapatkan IP:", error));
+        .then((response) => response.json())
+        .then((data) => data.ip)
+        .catch((error) => console.error("Gagal mendapatkan IP:", error));
 
       if (ipAddress === "ERROR") {
         throw new Error("Terjadi kesalahan: Gagal mendapatkan alamat IP.");
@@ -254,11 +256,16 @@ export default function Login() {
         <main>
           <section className="login-background">
             <div className="login-container">
-            <div className="maskotlogin mr-5" style={{color:"#0A5EA8"}}>
-              <h3 className="fw-bold" style={{width:"600px", textAlign:"center"}}>Mulai langkah awal pembelajaranmu dengan P-KNOW</h3>
-              <img src={maskot} alt="" width="600px"/>
-            </div>
-          
+              <div className="maskotlogin mr-5" style={{ color: "#0A5EA8" }}>
+                <h3
+                  className="fw-bold"
+                  style={{ width: "600px", textAlign: "center" }}
+                >
+                  Mulai langkah awal pembelajaranmu dengan P-KNOW
+                </h3>
+                <img src={maskot} alt="" width="600px" />
+              </div>
+
               <div className="login-box">
                 <img
                   src={logoPknow}
@@ -305,7 +312,7 @@ export default function Login() {
                     )}
                   </div> */}
 
-                {/* <div className="captcha-container" style={{ marginTop: "20px" }}>
+                  {/* <div className="captcha-container" style={{ marginTop: "20px" }}>
                     <label htmlFor="captcha" style={{ marginBottom: "5px", display: "block" }}>
                       {captchaQuestion}
                     </label>
@@ -331,7 +338,7 @@ export default function Login() {
                     )}
                   </div> */}
 
-{/* 
+                  {/* 
                   <div className="captcha-container" style={{ marginTop: "20px", display:"flex", justifyContent:"space-between" }}>
                       <div
                         className="captcha-number"
@@ -395,59 +402,62 @@ export default function Login() {
                       </div>
                     </div> */}
 
-<div className="mt-4">
-    <p style={{textAlign:"left"}}>Captcha <span style={{color:"red"}}>*</span></p>
-    </div>
-<div style={{ display: "flex", alignItems: "center",  marginTop:"5px" }}>
-  
-    <img
-                    src={captchaImage}
-                    alt="Captcha"
-                    style={{ height: "50px", marginRight: "10px" }}
-                  />
-
-                 
-                  <div className="d-flex">
-                    <div className="ml-3">
-                   <input
-                  type="text"
-                  placeholder="Masukkan Captcha"
-                  value={userCaptchaInput}
-                  onChange={(e) => setUserCaptchaInput(e.target.value)}
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    borderRadius: "5px 0px 0px 5px",
-                    border: "1px solid #ccc",
-                    height:"44px"
-                  }}
-                />
-                </div>
-                <div className="">
-                <button
-                    type="button"
-                    onClick={loadCaptcha}
+                  <div className="mt-4">
+                    <p style={{ textAlign: "left" }}>
+                      Captcha <span style={{ color: "red" }}>*</span>
+                    </p>
+                  </div>
+                  <div
                     style={{
-                      padding: "10px",
-                      width:"50px",
-                      border: "none",
-                      backgroundColor: "#0A5EA8",
-                      borderRadius: "0px 5px 5px 0px",
-                      cursor: "pointer",
-                      color:"white"
+                      display: "flex",
+                      alignItems: "center",
+                      marginTop: "5px",
                     }}
                   >
-                    <FontAwesomeIcon icon={faSyncAlt} />
-                  </button>
+                    <img
+                      src={captchaImage}
+                      alt="Captcha"
+                      style={{ height: "50px", marginRight: "10px" }}
+                    />
+
+                    <div className="d-flex">
+                      <div className="ml-3">
+                        <input
+                          type="text"
+                          placeholder="Masukkan Captcha"
+                          value={userCaptchaInput}
+                          onChange={(e) => setUserCaptchaInput(e.target.value)}
+                          required
+                          style={{
+                            width: "100%",
+                            padding: "10px",
+                            borderRadius: "5px 0px 0px 5px",
+                            border: "1px solid #ccc",
+                            height: "44px",
+                          }}
+                        />
+                      </div>
+                      <div className="">
+                        <button
+                          type="button"
+                          onClick={loadCaptcha}
+                          style={{
+                            padding: "10px",
+                            width: "50px",
+                            border: "none",
+                            backgroundColor: "#0A5EA8",
+                            borderRadius: "0px 5px 5px 0px",
+                            cursor: "pointer",
+                            color: "white",
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faSyncAlt} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                  
-                </div>
 
-               
-
-                {/* {isError.error && <p style={{ color: "red" }}>{isError.message}</p>} */}
+                  {/* {isError.error && <p style={{ color: "red" }}>{isError.message}</p>} */}
 
                   <button
                     className="login-button"
@@ -459,7 +469,6 @@ export default function Login() {
                       color: "white",
                       marginTop: "20px",
                       borderRadius: "10px",
-                      
                     }}
                     type="submit"
                     label="MASUK"
@@ -476,7 +485,10 @@ export default function Login() {
         <Modal title="Pilih Peran" ref={modalRef} size="small">
           <div className="">
             {listRole.map((value, index) => (
-              <div key={index} className="d-flex justify-content-between mr-2 ml-2 fw-normal mb-3">
+              <div
+                key={index}
+                className="d-flex justify-content-between mr-2 ml-2 fw-normal mb-3"
+              >
                 <button
                   type="button"
                   className="list-group-item list-group-item-action"

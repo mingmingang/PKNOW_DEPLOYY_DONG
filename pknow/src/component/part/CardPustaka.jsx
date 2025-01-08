@@ -8,6 +8,7 @@ import Input from "./Input";
 import Cookies from "js-cookie";
 import { decryptId } from "../util/Encryptor";
 import Alert from "./Alert";
+import { decode } from "html-entities";
 
 
 function CardPustaka({
@@ -70,7 +71,7 @@ function CardPustaka({
             book.Key !== null &&
             (book.PemilikKK === activeUser || uploader === book.Uploader)
         ).length === 0 ? (
-          <div className="col-md-12">
+          <div className="col-md-12 ml-3">
             <Alert type="warning" message="Tidak ada data.." />
           </div>
         ) : (
@@ -142,20 +143,19 @@ function CardPustaka({
                       </span>
                     </div>
                     <div>
-                      <p
-                        className="deskripsi d-flex"
-                        style={{ fontSize: "14px", marginLeft:'0px', marginTop:"15px" }}
-                      >
-                        {book.Keterangan.length > MAX_DESCRIPTION_LENGTH &&
-                        !expandDeskripsi[book.Key] ? (
-                          <>
-                            {book.Keterangan.slice(0, MAX_DESCRIPTION_LENGTH) +
-                              " ..."}
-                          </>
-                        ) : (
-                          <>{book.Keterangan}</>
-                        )}
-                      </p>
+                    <p
+      className="deskripsi d-flex"
+      style={{ fontSize: "14px", marginLeft: "0px", marginTop: "15px" }}
+    >
+      {book.Keterangan.length > MAX_DESCRIPTION_LENGTH &&
+      !expandDeskripsi[book.Key] ? (
+        <>
+          {decode(book.Keterangan.slice(0, MAX_DESCRIPTION_LENGTH) + " ...")}
+        </>
+      ) : (
+        <>{decode(book.Keterangan)}</>
+      )}
+    </p>
                       {book.Keterangan.length > MAX_DESCRIPTION_LENGTH && (
                         <a
                           className="btn btn-link text-decoration-none p-0"
@@ -384,7 +384,7 @@ function CardPustaka({
                               " ..."}
                           </>
                         ) : (
-                          <>{book.Keterangan}</>
+                          <>{decode(book.Keterangan)}</>
                         )}
                       </p>
                       {book.Keterangan.length > MAX_DESCRIPTION_LENGTH && (

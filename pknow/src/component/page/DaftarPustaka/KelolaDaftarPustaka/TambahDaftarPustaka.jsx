@@ -21,29 +21,27 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
   const [isLoading, setIsLoading] = useState(false);
   const [listKK, setListKK] = useState([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [isBackAction, setIsBackAction] = useState(false);  
+  const [isBackAction, setIsBackAction] = useState(false);
 
   const deskripsiRef = useRef(null);
 
   const handleGoBack = () => {
-    setIsBackAction(true);  
-    setShowConfirmation(true);  
+    setIsBackAction(true);
+    setShowConfirmation(true);
   };
 
   const handleConfirmYes = () => {
-    setShowConfirmation(false); 
+    setShowConfirmation(false);
     onChangePage("index", withID);
   };
 
-
   const handleConfirmNo = () => {
-    setShowConfirmation(false);  
+    setShowConfirmation(false);
   };
 
   const [filePreview, setFilePreview] = useState(false);
   const fileGambarRef = useRef(null);
   const fileDocumentRef = useRef(null);
-
 
   const formDataRef = useRef({
     kke_id: withID,
@@ -58,21 +56,26 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
   const userSchema = object({
     kke_id: string().required("Pilih Terlebih Dahulu"),
     pus_file: string().required("Pilih File Pustaka Terlebih Dahulu"),
-    pus_judul: string().max(30, "Maksimal 30 Karakter").required("Isi Judul Terlebih Dahulu"),
+    pus_judul: string()
+      .max(30, "Maksimal 30 Karakter")
+      .required("Isi Judul Terlebih Dahulu"),
     pus_kata_kunci: string().required("Isi Kata Kunci Terlebih Dahulu"),
-    pus_keterangan: string().required("Isi Keterangan Terlebih Dahulu"),
+    pus_keterangan: string()
+      .required("Isi Keterangan Terlebih Dahulu")
+      .max(200, "Maksimal 200 Karakter")
+      .min(100, "Minimum 100 Karakter"),
     pus_gambar: string(),
     pus_status: string(),
-  });  
+  });
 
   const resetForm = () => {
     formDataRef.current = {
       pus_file: "",
-    pus_judul: "",
-    pus_keterangan: "",
-    pus_kata_kunci: "",
-    pus_gambar: "",
-    pus_status: "Aktif",
+      pus_judul: "",
+      pus_keterangan: "",
+      pus_kata_kunci: "",
+      pus_gambar: "",
+      pus_status: "Aktif",
     };
     setFilePreview(false);
     setErrors({});
@@ -86,10 +89,10 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
 
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
-  
+
     if (name === "deskripsi") {
       const cursorPosition = deskripsiRef.current.selectionStart;
-  
+
       try {
         if (value === "") {
           setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
@@ -100,18 +103,20 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
       } catch (error) {
         setErrors((prevErrors) => ({ ...prevErrors, [name]: error.message }));
       }
-  
+
       formDataRef.current[name] = value;
-  
+
       // Mengembalikan posisi cursor setelah update
       setTimeout(() => {
         if (deskripsiRef.current) {
-          deskripsiRef.current.setSelectionRange(cursorPosition, cursorPosition);
+          deskripsiRef.current.setSelectionRange(
+            cursorPosition,
+            cursorPosition
+          );
         }
       }, 0);
     }
 
-    
     const validationError = await validateInput(name, value, userSchema);
     formDataRef.current[name] = value;
     setErrors((prevErrors) => ({
@@ -202,7 +207,6 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
     }));
   };
 
-
   const handleAdd = async (e) => {
     e.preventDefault();
 
@@ -212,16 +216,15 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
       setErrors
     );
 
-    
     if (Object.values(validationErrors).every((error) => !error)) {
       setIsError((prevError) => {
         return { ...prevError, error: false };
       });
       setErrors({});
-      console.log("gambar ref",fileGambarRef.current.files.length)
+      console.log("gambar ref", fileGambarRef.current.files.length);
       const uploadPromises = [];
 
-      console.log("reffff",fileGambarRef.current )
+      console.log("reffff", fileGambarRef.current);
 
       if (fileGambarRef.current.files.length > 0) {
         uploadPromises.push(
@@ -242,7 +245,6 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
           })
         );
       }
-      
 
       try {
         await Promise.all(uploadPromises);
@@ -325,75 +327,101 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
           <Alert type="danger" message={isError.message} />
         </div>
       )}
-         <div className="" style={{display:"flex", justifyContent:"space-between", marginTop:"100px", marginLeft:"70px", marginRight:"70px"}}>
-            <div className="back-and-title" style={{display:"flex"}}>
-              <button style={{backgroundColor:"transparent", border:"none"}} onClick={handleGoBack}><img src={BackPage} alt="" /></button>
-                <h4 style={{ color:"#0A5EA8", fontWeight:"bold", fontSize:"30px", marginTop:"10px", marginLeft:"20px"}}>Tambah Daftar Pustaka</h4>
-              </div>
-                <div className="ket-draft">
-                <span className="badge text-bg-dark " style={{fontSize:"16px"}}>Draft</span>
-                </div>
-              </div>
+      <div
+        className=""
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "100px",
+          marginLeft: "70px",
+          marginRight: "70px",
+        }}
+      >
+        <div className="back-and-title" style={{ display: "flex" }}>
+          <button
+            style={{ backgroundColor: "transparent", border: "none" }}
+            onClick={handleGoBack}
+          >
+            <img src={BackPage} alt="" />
+          </button>
+          <h4
+            style={{
+              color: "#0A5EA8",
+              fontWeight: "bold",
+              fontSize: "30px",
+              marginTop: "10px",
+              marginLeft: "20px",
+            }}
+          >
+            Tambah Daftar Pustaka
+          </h4>
+        </div>
+        <div className="ket-draft">
+          <span className="badge text-bg-dark " style={{ fontSize: "16px" }}>
+            Draft
+          </span>
+        </div>
+      </div>
       <form onSubmit={handleAdd}>
-        <div className="card" style={{margin:"20px 80px"}}>
+        <div className="card" style={{ margin: "20px 80px" }}>
           <div className="card-body p-4">
             <div className="row">
-            <div className="col-lg-4" style={{display:"flex"}}>
-              <div className="file-preview">
-              <div className="preview-img">
-                      {filePreview ? (
-                        <div
+              <div className="col-lg-4" style={{ display: "flex" }}>
+                <div className="file-preview">
+                  <div className="preview-img">
+                    {filePreview ? (
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          marginRight: "30px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <img
+                          src={filePreview}
+                          alt="Preview"
                           style={{
-                            marginTop: "10px",
-                            marginRight: "30px",
-                            marginBottom: "20px",
+                            width: "200px",
+                            height: "auto",
+                            borderRadius: "20px",
                           }}
-                        >
-                          <img
-                            src={filePreview}
-                            alt="Preview"
-                            style={{
-                              width: "200px",
-                              height: "auto",
-                              borderRadius: "20px",
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          marginTop: "10px",
+                          marginRight: "30px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <img
+                          src={NoImage} // Use fallback image if no preview available
+                          alt="No Preview Available"
                           style={{
-                            marginTop: "10px",
-                            marginRight: "30px",
-                            marginBottom: "20px",
+                            width: "200px",
+                            height: "auto",
+                            borderRadius: "20px",
                           }}
-                        >
-                          <img
-                            src={NoImage} // Use fallback image if no preview available
-                            alt="No Preview Available"
-                            style={{
-                              width: "200px",
-                              height: "auto",
-                              borderRadius: "20px",
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-              </div>
-              <div className="fileupload">
-              <FileUpload
-                        forInput="gambarInputref"
-                        label="Gambar Daftar Pustaka (.png)"
-                        formatFile=".png"
-                        ref={fileGambarRef}
-                        onChange={() => handleFileChange(fileGambarRef, "png")}
-                        errorMessage={errors.pus_gambar}
-                        isRequired={true}
-                      />
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="fileupload">
+                  <FileUpload
+                    forInput="gambarInputref"
+                    label="Gambar Daftar Pustaka (.png)"
+                    formatFile=".png"
+                    ref={fileGambarRef}
+                    onChange={() => handleFileChange(fileGambarRef, "png")}
+                    errorMessage={errors.pus_gambar}
+                    isRequired={true}
+                  />
                 </div>
               </div>
-              </div>
-              <div className="row">
+            </div>
+            <div className="row">
               <div className="col-lg-4">
                 <Input
                   type="text"
@@ -437,12 +465,18 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
                   maxFileSize="250"
                   label="File Pustaka (.pdf, .docx, .xlsx, .pptx, .mp4)"
                   formatFile=".pdf,.docx,.xlsx,.pptx,.mp4"
-                  onChange={() => handleDocumentChange(fileDocumentRef, "pdf,docx,xlsx,pptx,mp4", 250)}
+                  onChange={() =>
+                    handleDocumentChange(
+                      fileDocumentRef,
+                      "pdf,docx,xlsx,pptx,mp4",
+                      250
+                    )
+                  }
                   errorMessage={errors.pus_file}
                   isRequired
                 />
               </div>
-              
+
               <div className="col-lg-12">
                 <Input
                   type="textarea"
@@ -458,53 +492,55 @@ export default function MasterDaftarPustakaAdd({ onChangePage, withID }) {
               </div>
             </div>
           </div>
-         
 
-<div
-                className="d-flex justify-content-end"
-                style={{
-                  marginRight: "20px",
-                  marginTop: "-10px",
-                  marginBottom: "20px",
-                }}
-              >
-                <button
-                  className="btn btn-secondary btn-sm"
-                  type="button"
-                  onClick={resetForm}
-                  style={{
-                    marginRight: "10px",
-                    padding: "5px 15px",
-                    fontWeight: "bold",
-                    borderRadius: "10px",
-                  }}
-                >
-                  Batalkan
-                </button>
-                <button
-                  className="btn btn-primary btn-sm"
-                  type="submit"
-                  style={{
-                    marginRight: "10px",
-                    padding: "5px 20px",
-                    fontWeight: "bold",
-                    borderRadius: "10px",
-                  }}
-                >
-                  Simpan
-                </button>
-              </div>
+          <div
+            className="d-flex justify-content-end"
+            style={{
+              marginRight: "20px",
+              marginTop: "-10px",
+              marginBottom: "20px",
+            }}
+          >
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={resetForm}
+              style={{
+                marginRight: "10px",
+                padding: "5px 15px",
+                fontWeight: "bold",
+                borderRadius: "10px",
+              }}
+            >
+              Batalkan
+            </button>
+            <button
+              className="btn btn-primary btn-sm"
+              type="submit"
+              style={{
+                marginRight: "10px",
+                padding: "5px 20px",
+                fontWeight: "bold",
+                borderRadius: "10px",
+              }}
+            >
+              Simpan
+            </button>
+          </div>
         </div>
       </form>
       {showConfirmation && (
         <Konfirmasi
           title={isBackAction ? "Konfirmasi Kembali" : "Konfirmasi Simpan"}
-          pesan={isBackAction ? "Apakah anda ingin kembali?" : "Anda yakin ingin simpan data?"}
+          pesan={
+            isBackAction
+              ? "Apakah anda ingin kembali?"
+              : "Anda yakin ingin simpan data?"
+          }
           onYes={handleConfirmYes}
           onNo={handleConfirmNo}
         />
-        )}
+      )}
     </>
   );
 }
-

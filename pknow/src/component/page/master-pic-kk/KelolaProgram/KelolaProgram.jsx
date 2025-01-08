@@ -124,7 +124,7 @@ export default function ProgramIndex({ onChangePage }) {
     try {
       while (true) {
         let data = await UseFetch(API_LINK + "Program/GetProgram", filter);
-
+        
         if (data === "ERROR") {
           throw new Error("Terjadi kesalahan: Gagal mengambil data program.");
         } else if (data === "data kosong") {
@@ -509,6 +509,7 @@ export default function ProgramIndex({ onChangePage }) {
                             {currentData["Nama Kelompok Keahlian"]}
                           </strong>
                         </h5>
+                        {console.log("list program", listProgram)}
                         {listProgram[0]?.Message ? (
                           <Alert
                             type="warning"

@@ -286,7 +286,7 @@ export default function DetailPersetujuan({ onChangePage, withID }) {
                       </h4>
                       <p
                         className="py-2"
-                        style={{ textAlign: "justify", width: "500px" }}
+                        style={{ textAlign: "justify", width: "570px" }}
                       >
                         {formData.Deskripsi}
                       </p>
@@ -399,6 +399,17 @@ export default function DetailPersetujuan({ onChangePage, withID }) {
 
                   <div className="card-body">
   <div className="row">
+  {listAnggota?.filter((value) => value.Status === "Menunggu Acc").length === 0 && (
+  <>
+  <div className="mr-1">
+    <Alert
+      type="warning mt-2 ml-1 mr-2"
+      message="Belum ada Tenaga Pendidik yang melakukan pengajuan.."
+    />
+    </div>
+  </>
+)}
+
     {listAnggota
       ?.filter((value) => value.Status === "Menunggu Acc")
       .map((value, index) => (
